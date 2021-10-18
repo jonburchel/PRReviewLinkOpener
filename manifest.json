@@ -1,0 +1,25 @@
+{
+    "name": "PR Review Link Opener",
+    "description": "This extension opens all preview links from the last validation pass for Pull Requests in Git.",
+    "version": "1.0",
+    "manifest_version": 3,
+    "background": {
+        "service_worker": "background.js"
+      },
+    "permissions": ["storage", "activeTab", "scripting"],
+    "host_permissions": ["http://*/*", "https://*/*", "<all_urls>"],
+    "action": {
+      "default_icon": {
+        "16": "/images/PRReviewLinkOpenerIcon16.png",
+        "32": "/images/PRReviewLinkOpenerIcon32.png",
+        "48": "/images/PRReviewLinkOpenerIcon48.png",
+        "128": "/images/PRReviewLinkOpenerIcon128.png"
+      }
+    },
+    "icons": {
+      "16": "/images/PRReviewLinkOpenerIcon16.png",
+      "32": "/images/PRReviewLinkOpenerIcon32.png",
+      "48": "/images/PRReviewLinkOpenerIcon48.png",
+      "128": "/images/PRReviewLinkOpenerIcon128.png"
+    }
+  }
