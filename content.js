@@ -19,15 +19,51 @@ else
             curRow = curRow.nextElementSibling;
         var BuildReportUrl = curRow.firstElementChild.href;
 
-        chrome.runtime.sendMessage({BuildReportUrl: BuildReportUrl}, response => {
+        chrome.runtime.sendMessage({MsgType: "BuildReport", BuildReportUrl: BuildReportUrl}, async response => {
             var buildreport = document.createElement("html");
             buildreport.innerHTML = response.buildreport;
             
-            var ValidatedFilesTable = buildreport.querySelector("a[name=\"ValidatedhFiles\"]").parentElement.parentElement.parentElement.nextElementSibling.nextElementSibling;
-            if (confirm("Open " + (ValidatedFilesTable.rows.length - 1) + " preview page" + (ValidatedFilesTable.rows.length > 2 ? "s" : "") + " for this PR?"))
+            var ValidatedFilesTable = buildreport.querySelector("a[name=\"ValidatedhFiles\"]")
+            var Tables = buildreport.getElementsByTagName("table");
+            for (var i = 0; i < Tables.length; i++)
             {
-                for (var i = 1; i < ValidatedFilesTable.rows.length; i++)
-                    window.open(ValidatedFilesTable.rows[i].children[2].children[0].href);
+                 if (ValidatedFilesTable.compareDocumentPosition(Tables[i]) == 4)
+                 {
+                     ValidatedFilesTable = Tables[i];
+                     i = Tables.length;
+                 }
+            }
+            
+            var Topics = new Array();
+            for (var i = 1; i < ValidatedFilesTable.rows.length; i++)
+            {
+                var href = ValidatedFilesTable.rows[i].children[2].children[0].href;
+                var file = ValidatedFilesTable.rows[i].children[0].children[0].href
+                if (file.substring(file.length - 3) == ".md")
+                {
+                    function SendMessageWithPromise(){
+                        return new Promise((resolve, reject) => {
+                            chrome.runtime.sendMessage({MsgType: "ValidatedFile", URL: href}, function(res) {
+                                Topics.push({URL: href, Title: res.pageTitle});
+                                resolve();
+                                return true;
+                            });
+                        });
+                    }
+                    await SendMessageWithPromise();
+                }    
+            }
+            if (confirm("Open " + (Topics.length) + " preview page" + (Topics.length > 1 ? "s" : "") + " for this PR?"))
+            {
+                var TopicsList = "";
+                for (var i = 0; i < Topics.length; i++)
+                {
+                    window.open(Topics[i].URL);
+                    TopicsList += Topics[i].Title + "<br>";
+                }
+                var PR = document.location.href.substring(document.location.href.lastIndexOf("/") + 1);
+                var TopicsListWin = window.open("", "Topics list for PR " + PR);
+                TopicsListWin.document.body.innerHTML = "<html><head><title>List of topics in PR " + PR + "</title></head><body><H1>List of topics in PR <a href='" + document.location.href + "'>" + PR + "</a></H1>" + TopicsList + "</body></html>";                
             }
 
             return true;
