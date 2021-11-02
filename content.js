@@ -37,20 +37,27 @@ else
             var Topics = new Array();
             for (var i = 1; i < ValidatedFilesTable.rows.length; i++)
             {
-                var href = ValidatedFilesTable.rows[i].children[2].children[0].href;
-                var file = ValidatedFilesTable.rows[i].children[0].children[0].href
-                if (file.substring(file.length - 3) == ".md")
+                try
                 {
-                    function SendMessageWithPromise(){
-                        return new Promise((resolve, reject) => {
-                            chrome.runtime.sendMessage({MsgType: "ValidatedFile", URL: href}, function(res) {
-                                Topics.push({URL: href, Title: res.pageTitle});
-                                resolve();
-                                return true;
+                    var href = ValidatedFilesTable.rows[i].children[2].children[0].href;
+                    var file = ValidatedFilesTable.rows[i].children[0].children[0].href
+                    if (file.substring(file.length - 3) == ".md")
+                    {
+                        function SendMessageWithPromise(){
+                            return new Promise((resolve, reject) => {
+                                chrome.runtime.sendMessage({MsgType: "ValidatedFile", URL: href}, function(res) {
+                                    Topics.push({URL: href, Title: res.pageTitle});
+                                    resolve();
+                                    return true;
+                                });
                             });
-                        });
+                        }
+                        await SendMessageWithPromise();
                     }
-                    await SendMessageWithPromise();
+                }
+                catch(e)
+                {
+                    // we might get an innocuous exception here if there is no preview URL present so we just skip that item if so
                 }    
             }
             if (confirm("Open " + (Topics.length) + " preview page" + (Topics.length > 1 ? "s" : "") + " for this PR?"))
