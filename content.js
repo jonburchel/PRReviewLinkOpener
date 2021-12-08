@@ -63,16 +63,26 @@ else
             if (confirm("Open " + (Topics.length) + " preview page" + (Topics.length > 1 ? "s" : "") + " for this PR?"))
             {
                 var TopicsList = "";
-                for (var i = 0; i < Topics.length; i++)
-                {
-                    window.open(Topics[i].URL);
-                    TopicsList += Topics[i].Title + "<br>";
-                }
-                var PR = document.location.href.substring(document.location.href.lastIndexOf("/") + 1);
-                var TopicsListWin = window.open("", "Topics list for PR " + PR);
-                TopicsListWin.document.body.innerHTML = "<html><head><title>List of topics in PR " + PR + "</title></head><body><H1>List of topics in PR <a href='" + document.location.href + "'>" + PR + "</a></H1>" + TopicsList + "</body></html>";                
-            }
+                var OpenedPreviewPages = null;
 
+                chrome.storage.local.get("OpenedPreviewPages",  function (ca){
+                    if (ca.OpenedPreviewPages != null)
+                        OpenedPreviewPages = ca.OpenedPreviewPages;
+                    else
+                        OpenedPreviewPages = new Array();
+                    
+                        for (var i = 0; i < Topics.length; i++)
+                        {
+                            OpenedPreviewPages.push(Topics[i].URL);
+                            window.open(Topics[i].URL);
+                            TopicsList += Topics[i].Title + "<br>";
+                        }
+                        var PR = document.location.href.substring(document.location.href.lastIndexOf("/") + 1);
+                        var TopicsListWin = window.open("", "Topics list for PR " + PR);
+                        chrome.storage.local.set({"OpenedPreviewPages": OpenedPreviewPages});
+                        TopicsListWin.document.body.innerHTML = "<html><head><title>List of topics in PR " + PR + "</title></head><body><H1>List of topics in PR <a href='" + document.location.href + "'>" + PR + "</a></H1>" + TopicsList + "</body></html>";                
+                });               
+            }
             return true;
         });
     }

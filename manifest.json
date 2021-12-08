@@ -6,7 +6,7 @@
     "background": {
         "service_worker": "background.js"
       },
-    "permissions": ["storage", "activeTab", "scripting"],
+    "permissions": ["storage", "activeTab", "scripting", "contextMenus", "tabs", "scripting"],
     "host_permissions": ["http://*/*", "https://*/*", "<all_urls>"],
     "action": {
       "default_icon": {
@@ -21,5 +21,14 @@
       "32": "/images/PRReviewLinkOpenerIcon32.png",
       "48": "/images/PRReviewLinkOpenerIcon48.png",
       "128": "/images/PRReviewLinkOpenerIcon128.png"
+    },
+    "commands": {
+      "CloseOpenedPreviewTabs": {
+        "suggested_key": {
+          "default": "Ctrl+Shift+C",
+          "mac": "Command+Shift+C"
+        },
+        "description": "Close all opened preview tabs (Ctrl+Shift+C)."
+      }
     }
   }
