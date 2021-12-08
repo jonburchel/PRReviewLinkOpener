@@ -9,30 +9,39 @@ chrome.action.onClicked.addListener((tab) => {
 
 chrome.runtime.onInstalled.addListener(()=>{
   chrome.contextMenus.create({
-    title:"Close all opened preview tabs. (Ctrl+Shift+C)",
+    title:"Close all opened preview tabs. (Alt+K)",
     contexts:["all"],
     id: "PRReviewLinkOpenerCloseOpenedTabs",
   });
 });
 
-chrome.contextMenus.onClicked.addListener(async function(info, tab){
-  if (info.menuItemId == "PRReviewLinkOpenerCloseOpenedTabs") 
-  {
-    chrome.storage.local.get("OpenedPreviewPages",  function (ca){
-      if (ca.OpenedPreviewPages != null)
+function CloseTabs()
+{
+  chrome.storage.local.get("OpenedPreviewPages",  function (ca){
+    if (ca.OpenedPreviewPages != null)
+    {
+      for(var i = 0; i < ca.OpenedPreviewPages.length; i++)
       {
-        for(var i = 0; i < ca.OpenedPreviewPages.length; i++)
-        {
-          var url = ca.OpenedPreviewPages[i];
-          chrome.tabs.query({url:url}, function(tab){
-            if (tab != null && tab.length > 0)
-              chrome.tabs.remove(tab[0].id);
-          });          
-        }
+        var url = ca.OpenedPreviewPages[i];
+        chrome.tabs.query({url:url}, function(tab){
+          if (tab != null && tab.length > 0)
+            chrome.tabs.remove(tab[0].id);
+        });          
       }
-      chrome.storage.local.set({"OpenedPreviewPages": null});
-    });    
-  }
+    }
+    chrome.storage.local.set({"OpenedPreviewPages": null});
+  });
+}
+
+chrome.commands.onCommand.addListener((c, tab)=>{
+  if (c=="CloseOpenedTabs")
+    CloseTabs();
+});
+
+chrome.contextMenus.onClicked.addListener(async function(info, tab){
+  console.log("here")
+  if (info.menuItemId == "PRReviewLinkOpenerCloseOpenedTabs") 
+    CloseTabs();
 });
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse)=>{

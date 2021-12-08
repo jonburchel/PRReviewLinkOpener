@@ -23,12 +23,12 @@
       "128": "/images/PRReviewLinkOpenerIcon128.png"
     },
     "commands": {
-      "CloseOpenedPreviewTabs": {
+      "CloseOpenedTabs": {
         "suggested_key": {
-          "default": "Ctrl+Shift+C",
-          "mac": "Command+Shift+C"
+          "default": "Alt+K",
+          "mac": "Alt+K"
         },
-        "description": "Close all opened preview tabs (Ctrl+Shift+C)."
+        "description": "Close all opened preview tabs (Alt+K)."
       }
     }
   }

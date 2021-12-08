@@ -54,13 +54,17 @@ else
                         }
                         await SendMessageWithPromise();
                     }
+                    if (file.substring(file.length - 4) == ".yml")
+                    {
+                        Topics.push({URL: null, Title: file})
+                    }
                 }
                 catch(e)
                 {
                     // we might get an innocuous exception here if there is no preview URL present so we just skip that item if so
                 }    
             }
-            if (confirm("Open " + (Topics.length) + " preview page" + (Topics.length > 1 ? "s" : "") + " for this PR?"))
+            if (confirm("Open " + (Topics.filter(t=>t.URL != null).length) + " preview page" + (Topics.length > 1 ? "s" : "") + " for this PR?"))
             {
                 var TopicsList = "";
                 var OpenedPreviewPages = null;
@@ -73,8 +77,11 @@ else
                     
                         for (var i = 0; i < Topics.length; i++)
                         {
-                            OpenedPreviewPages.push(Topics[i].URL);
-                            window.open(Topics[i].URL);
+                            if (Topics[i].URL != null)
+                            {
+                                OpenedPreviewPages.push(Topics[i].URL);
+                                window.open(Topics[i].URL);
+                            }
                             TopicsList += Topics[i].Title + "<br>";
                         }
                         var PR = document.location.href.substring(document.location.href.lastIndexOf("/") + 1);
