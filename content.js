@@ -1,10 +1,26 @@
+async function readLocalStorageInContent (key) {
+    return new Promise((resolve, reject) => {
+      chrome.storage.local.get([key], function (result) {
+        if (result[key] === undefined) {
+          resolve(null);
+        } else {
+          resolve(result[key]);
+        }
+      });
+    });
+}
+
 if (!document.location.href.startsWith("https://github.com/MicrosoftDocs/") 
     || !document.location.href.includes("/pull/"))
 {
     alert("This extension works with Git Pull Requests to Microsoft Docs.\rPlease try again from a PR under https://github.com/MicrosoftDocs.");
 }
 else
-{
+{   
+    ///////////////////////////////////////////////////////////////
+    // BEGIN HTML PARSING OF BUILD STATUS IN PR AND BUILD REPORT //
+    ///////////////////////////////////////////////////////////////
+
     var h3s = Array.from(document.querySelectorAll('h3'));
     var i = 0;
     for (i = h3s.length - 1; i > 0; i--)
@@ -18,7 +34,7 @@ else
         while (curRow.innerText.indexOf("build report") == -1)
             curRow = curRow.nextElementSibling;
         var BuildReportUrl = curRow.firstElementChild.href;
-
+        
         chrome.runtime.sendMessage({MsgType: "BuildReport", BuildReportUrl: BuildReportUrl}, async response => {
             var buildreport = document.createElement("html");
             buildreport.innerHTML = response.buildreport;
@@ -35,28 +51,51 @@ else
             }
             
             var Topics = new Array();
+            
+            var PRNum = document.location.href.substring(document.location.href.indexOf("/pull/") + "/pull/".length);
+            var AllChecked = await readLocalStorageInContent("AllFiles" + PRNum);
+            if (AllChecked == null) 
+                AllChecked = true;
             for (var i = 1; i < ValidatedFilesTable.rows.length; i++)
             {
                 try
                 {
                     var href = ValidatedFilesTable.rows[i].children[2].children[0].href;
-                    var file = ValidatedFilesTable.rows[i].children[0].children[0].href
-                    if (file.substring(file.length - 3) == ".md")
+                    var file = ValidatedFilesTable.rows[i].children[0].children[0].href;
+                    
+                    var fileend = file;
+                    if (fileend.indexOf("/articles/") != -1)
+                        fileend = fileend.substring(fileend.indexOf("/articles/"));
+                    if (fileend.indexOf("/includes/") != -1)
+                        fileend = fileend.substring(fileend.indexOf("/includes/"));
+                    var FileChecked = await readLocalStorageInContent("PR" + PRNum + "File" + fileend);
+                    if (FileChecked == null) 
+                        FileChecked = true;
+
+                    if (FileChecked || AllChecked)
                     {
-                        function SendMessageWithPromise(){
-                            return new Promise((resolve, reject) => {
-                                chrome.runtime.sendMessage({MsgType: "ValidatedFile", URL: href}, function(res) {
-                                    Topics.push({URL: href, Title: res.pageTitle});
-                                    resolve();
-                                    return true;
+                        if (file.substring(file.length - 3) == ".md")
+                        {
+                            function SendMessageWithPromise(){
+                                return new Promise((resolve, reject) => {
+                                    chrome.runtime.sendMessage({MsgType: "ValidatedFile", URL: href}, function(res) {
+                                        Topics.push({URL: href, Title: res.pageTitle});
+                                        resolve();
+                                        return true;
+                                    });
                                 });
-                            });
+                            }
+                            await SendMessageWithPromise();
                         }
-                        await SendMessageWithPromise();
-                    }
-                    if (file.substring(file.length - 4) == ".yml")
-                    {
-                        Topics.push({URL: null, Title: file})
+                        if (file.substring(file.length - 4) == ".png")
+                        {
+                            var pngname = ValidatedFilesTable.rows[i].children[0].children[0].innerText;
+                            Topics.push({URL: file, Title: file});
+                        }
+                        if (file.substring(file.length - 4) == ".yml")
+                        {
+                            Topics.push({URL: null, Title: file})
+                        }
                     }
                 }
                 catch(e)
@@ -64,6 +103,11 @@ else
                     // we might get an innocuous exception here if there is no preview URL present so we just skip that item if so
                 }    
             }
+            
+            /////////////////////////////////////////////////////////////
+            // END HTML PARSING OF BUILD STATUS IN PR AND BUILD REPORT //
+            /////////////////////////////////////////////////////////////
+
             if (confirm("Open " + (Topics.filter(t=>t.URL != null).length) + " preview page" + (Topics.length > 1 ? "s" : "") + " for this PR?"))
             {
                 var TopicsList = "";
