@@ -97,4 +97,35 @@ else
     {
         alert("There are no preview URLs available yet for this PR.");
     }
+    // Acrolinx
+
+    var h2s = Array.from(document.querySelectorAll('h2'));
+    
+    // Loop backwards through all h2s to find Acrolinx section
+    for (var h2index = h2s.length - 1; h2index; h2index--)
+    {
+        if (h2s[h2index].innerText.includes('Acrolinx Scorecards')) 
+            break;
+    }
+
+     // If we found the Acrolinx section, loop through the table rows to find the scorecard URL
+    if (h2index > 0)
+    {
+        var articleTable = h2s[j].nextElementSibling.nextElementSibling.nextElementSibling; // Get the table of acrolinx links
+
+        // Loop through the table and get links to the Acrolinx scorecards anchor links
+        const FIRST_ARTICLE_ROW = 1;
+        const SCORECARD_LINK_COLUMN = 4;
+        for (var row = FIRST_ARTICLE_ROW; row < articleTable.rows.length; row++)
+        {
+            var acrolinxLink = articleTable.rows[row].cells[SCORECARD_LINK_COLUMN].innerHTML; // Get the HTML anchor tag for the Acrolinx scorecard
+            var acrolinxUrl = acrolinxLink.substring(acrolinxLink.indexOf("href=\"") + 6, acrolinxLink.indexOf("\" rel=")); // Extract the URL from hte HTML anchor tag
+            console.log("acrolinxLink is " + acrolinxLink);
+            console.log("acrolinxUrl is " + acrolinxUrl);
+        }
+    }
+    else
+    {
+        alert("There are no Acrolinx scorecards available yet for this PR.");
+    }
 }
