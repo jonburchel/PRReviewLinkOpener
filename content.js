@@ -120,7 +120,6 @@ else
         {
             var acrolinxLink = articleTable.rows[row].cells[SCORECARD_LINK_COLUMN].innerHTML; // Get the HTML anchor tag for the Acrolinx scorecard
             var acrolinxUrl = acrolinxLink.substring(acrolinxLink.indexOf("href=\"") + 6, acrolinxLink.indexOf("\" rel=")); // Extract the URL from hte HTML anchor tag
-            console.log("acrolinxLink is " + acrolinxLink);
             console.log("acrolinxUrl is " + acrolinxUrl);
         }
     }
