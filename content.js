@@ -111,7 +111,7 @@ else
      // If we found the Acrolinx section, loop through the table rows to find the scorecard URL
     if (h2index > 0)
     {
-        var articleTable = h2s[j].nextElementSibling.nextElementSibling.nextElementSibling; // Get the table of acrolinx links
+        var articleTable = h2s[h2index].nextElementSibling.nextElementSibling.nextElementSibling; // Get the table of acrolinx links
 
         // Loop through the table and get links to the Acrolinx scorecards anchor links
         const FIRST_ARTICLE_ROW = 1;
