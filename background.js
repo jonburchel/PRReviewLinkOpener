@@ -6,13 +6,13 @@ chrome.action.onClicked.addListener((tab) => {
     });
   });
 
-
 chrome.runtime.onInstalled.addListener(()=>{
   chrome.contextMenus.create({
     title:"Close all opened preview tabs. (Alt+K)",
     contexts:["all"],
     id: "PRReviewLinkOpenerCloseOpenedTabs",
   });
+
   chrome.contextMenus.create({
     type:"checkbox",
     checked:true,
@@ -20,6 +20,7 @@ chrome.runtime.onInstalled.addListener(()=>{
     contexts:["all"],
     id:"PRReviewLinkOpenerOpenForFirst20DocsInPR"
   });
+
   chrome.contextMenus.create({
     type:"checkbox",
     checked:true,
@@ -27,6 +28,7 @@ chrome.runtime.onInstalled.addListener(()=>{
     contexts:["all"],
     id:"PRReviewLinkOpenerOpenAcrolinx"
   });
+
   chrome.contextMenus.create({
     type:"checkbox",
     checked:true,
@@ -34,6 +36,7 @@ chrome.runtime.onInstalled.addListener(()=>{
     contexts:["all"],
     id:"PRReviewLinkOpenerOpenChanges"
   });
+
   chrome.contextMenus.create({
     type:"checkbox",
     checked:true,
@@ -66,6 +69,32 @@ chrome.commands.onCommand.addListener((c, tab)=>{
     CloseTabs();
 });
 
+function ShowPreviewPagesSelector()
+{
+  return new Promise((resolve, reject)=> {
+    var popupUrl = chrome.runtime.getURL('IncludeDocsList.html');
+    chrome.tabs.query({active: true, lastFocusedWindow: true}, tabs =>{
+      let url = tabs[0].url;
+      var qryUrl = popupUrl + 
+          '?PR=' + url;
+      chrome.tabs.create({ url: qryUrl, active: false}, function(tab, qryUrl) {
+        win = chrome.windows.create({ tabId: tab.id, type: 'popup', focused: true, top: 100, left: 100, height: 645, width: 720}, (win, qryUrl)=>{
+          var timer = setInterval((win, qryUrl)=>{            
+            chrome.tabs.query({windowId: win.id, url: qryUrl}, tabs=>{
+              if (tabs.length == 0)
+              {
+                clearInterval(timer);
+                resolve();
+                return true;
+              }  
+            })
+          }, 500, win, qryUrl);
+        });
+      });
+    });
+  });
+}
+
 chrome.contextMenus.onClicked.addListener(async function(info, tab){
   if (info.menuItemId == "PRReviewLinkOpenerCloseOpenedTabs") 
     CloseTabs();
@@ -73,17 +102,7 @@ chrome.contextMenus.onClicked.addListener(async function(info, tab){
   {
     if (!info.checked)
     {
-      var popupUrl = chrome.runtime.getURL('IncludeDocsList.html');
-      chrome.tabs.query({active: true, lastFocusedWindow: true}, tabs => {
-        let url = tabs[0].url;
-        var qryUrl = popupUrl + 
-            '?PR=' + url;
-        chrome.tabs.create({ url: qryUrl, active: false }, function(tab) {
-          chrome.windows.create({ tabId: tab.id, type: 'popup', focused: true, top: 100, left: 100, height: 645, width: 720}, ()=>{
-            return true;
-          });
-        });
-      });
+      ShowPreviewPagesSelector();
     }
   }
 });
@@ -110,6 +129,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse)=>{
       title = title.substring(0, title.indexOf("</title>"));
       sendResponse({pageTitle: title});
     });
+    return true;
+  }
+  if (message.MsgType == "MoreThan20PreviewFilesEncountered")
+  {
+    async function ShowPreviewPagesSelectorAsync()
+    {
+      await ShowPreviewPagesSelector().then(res => {sendResponse("finishedbitch")});
+    }
+    ShowPreviewPagesSelectorAsync();
     return true;
   }
 });

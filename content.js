@@ -10,6 +10,36 @@ async function readLocalStorageInContent (key) {
     });
 }
 
+function ShowPreviewPages(Topics)
+{
+    if (confirm("Open " + (Topics.filter(t=>t.URL != null).length) + " preview page" + (Topics.length > 1 ? "s" : "") + " for this PR?"))
+    {
+        var TopicsList = "";
+        var OpenedPreviewPages = null;
+
+        chrome.storage.local.get("OpenedPreviewPages",  function (ca){
+            if (ca.OpenedPreviewPages != null)
+                OpenedPreviewPages = ca.OpenedPreviewPages;
+            else
+                OpenedPreviewPages = new Array();
+            
+                for (var i = 0; i < Topics.length; i++)
+                {
+                    if (Topics[i].URL != null)
+                    {
+                        OpenedPreviewPages.push(Topics[i].URL);
+                        window.open(Topics[i].URL);
+                    }
+                    TopicsList += Topics[i].Title + "<br>";
+                }
+                var PR = document.location.href.substring(document.location.href.lastIndexOf("/") + 1);
+                var TopicsListWin = window.open("", "Topics list for PR " + PR);
+                chrome.storage.local.set({"OpenedPreviewPages": OpenedPreviewPages});
+                TopicsListWin.document.body.innerHTML = "<html><head><title>List of topics in PR " + PR + "</title></head><body><H1>List of topics in PR <a href='" + document.location.href + "'>" + PR + "</a></H1>" + TopicsList + "</body></html>";                
+        });               
+    }
+}
+
 if (!document.location.href.startsWith("https://github.com/MicrosoftDocs/") 
     || !document.location.href.includes("/pull/"))
 {
@@ -54,8 +84,12 @@ else
             
             var PRNum = document.location.href.substring(document.location.href.indexOf("/pull/") + "/pull/".length);
             var AllChecked = await readLocalStorageInContent("AllFiles" + PRNum);
+            var NoStoredPRFileSelection = false;
             if (AllChecked == null) 
+            {
+                NoStoredPRFileSelection = true;
                 AllChecked = true;
+            }
             for (var i = 1; i < ValidatedFilesTable.rows.length; i++)
             {
                 try
@@ -108,31 +142,16 @@ else
             // END HTML PARSING OF BUILD STATUS IN PR AND BUILD REPORT //
             /////////////////////////////////////////////////////////////
 
-            if (confirm("Open " + (Topics.filter(t=>t.URL != null).length) + " preview page" + (Topics.length > 1 ? "s" : "") + " for this PR?"))
+            if (Topics.length > 20 && NoStoredPRFileSelection)
             {
-                var TopicsList = "";
-                var OpenedPreviewPages = null;
-
-                chrome.storage.local.get("OpenedPreviewPages",  function (ca){
-                    if (ca.OpenedPreviewPages != null)
-                        OpenedPreviewPages = ca.OpenedPreviewPages;
-                    else
-                        OpenedPreviewPages = new Array();
-                    
-                        for (var i = 0; i < Topics.length; i++)
-                        {
-                            if (Topics[i].URL != null)
-                            {
-                                OpenedPreviewPages.push(Topics[i].URL);
-                                window.open(Topics[i].URL);
-                            }
-                            TopicsList += Topics[i].Title + "<br>";
-                        }
-                        var PR = document.location.href.substring(document.location.href.lastIndexOf("/") + 1);
-                        var TopicsListWin = window.open("", "Topics list for PR " + PR);
-                        chrome.storage.local.set({"OpenedPreviewPages": OpenedPreviewPages});
-                        TopicsListWin.document.body.innerHTML = "<html><head><title>List of topics in PR " + PR + "</title></head><body><H1>List of topics in PR <a href='" + document.location.href + "'>" + PR + "</a></H1>" + TopicsList + "</body></html>";                
-                });               
+                chrome.runtime.sendMessage({MsgType: "MoreThan20PreviewFilesEncountered"}, response => {
+                    console.log(response);
+                    ShowPreviewPages(Topics);
+                });                
+            }
+            else
+            {
+                ShowPreviewPages(Topics);
             }
             return true;
         });
