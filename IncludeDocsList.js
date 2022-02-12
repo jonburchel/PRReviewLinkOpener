@@ -44,8 +44,15 @@ const readLocalStorage = async (key) => {
     });
 };
 
-var PRURL = location.search.replace("?PR=", "");
+var PRURL = location.search.replace("?PR=", "").replace("&DueToMoreThan20Files", "");
 var PRNum = PRURL.substring(PRURL.indexOf("/pull/") + "/pull/".length);
+
+var DueToMoreThan20Files = location.search.indexOf("&DueToMoreThan20Files") > -1;
+if (DueToMoreThan20Files)
+{
+    document.title = "More than 20 files will be affected by this PR review";
+}
+
 
 ///////////////////////////////////////////////////////////////
 // BEGIN HTML PARSING OF BUILD STATUS IN PR AND BUILD REPORT //
@@ -88,7 +95,10 @@ chrome.runtime.sendMessage({MsgType: "LoadPRPage", PRPageURL: PRURL}, async resp
             var AllChecked = await readLocalStorage("AllFiles" + PRNum);
             if (AllChecked == null) 
                 AllChecked = true;
-            document.body.innerHTML += "<b>Choose articles for PR review from among those affected by this PR and click OK below:</b><br/><br/><input type=checkbox id=chkIncludeAll " + (AllChecked ? "checked" : "") + " /> Include all files<br/>"
+            if (DueToMoreThan20Files)
+            document.body.innerHTML += "<b>There are more than 20 files in this PR.  Choose files for PR review and click OK below to continue:</b><br/><br/><input type=checkbox id=chkIncludeAll " + (AllChecked ? "checked" : "") + " /> Include all files<br/>"
+            else
+                document.body.innerHTML += "<b>Choose files for review from among those affected by this PR and click OK below:</b><br/><br/><input type=checkbox id=chkIncludeAll " + (AllChecked ? "checked" : "") + " /> Include all files<br/>"
             
             var fileNum = 1;
             for (var i = 1; i < ValidatedFilesTable.rows.length; i++)
@@ -126,12 +136,16 @@ chrome.runtime.sendMessage({MsgType: "LoadPRPage", PRPageURL: PRURL}, async resp
                 window.close();
             });
             document.getElementById("chkIncludeAll").addEventListener("change", CheckboxChanged);
+            fileNum = 0;
             for(var i = 1; i < ValidatedFilesTable.rows.length; i++)
             {
                 var file = ValidatedFilesTable.rows[i].children[0].children[0].href;
                 var fileend = file.substring(file.lastIndexOf("."));
                 if (fileend == ".md" || fileend == ".png")
-                document.getElementById("chkIncludeFile" + i).addEventListener("change", CheckboxChanged);
+                {
+                    fileNum++;
+                    document.getElementById("chkIncludeFile" + fileNum).addEventListener("change", CheckboxChanged);
+                }
             }
             return true;
         });

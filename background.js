@@ -67,7 +67,7 @@ chrome.commands.onCommand.addListener((c, tab)=>{
     CloseTabs();
 });
 
-function ShowPreviewPagesSelector()
+function ShowPreviewPagesSelector(DueToMoreThan20Files)
 {
   return new Promise((resolve, reject)=> {
     var popupUrl = chrome.runtime.getURL('IncludeDocsList.html');
@@ -75,9 +75,11 @@ function ShowPreviewPagesSelector()
       let url = tabs[0].url;
       var qryUrl = popupUrl + 
           '?PR=' + url;
-      chrome.tabs.create({ url: qryUrl, active: false}, function(tab, qryUrl) {
-        win = chrome.windows.create({ tabId: tab.id, type: 'popup', focused: true, top: 100, left: 100, height: 645, width: 720}, (win, qryUrl)=>{
-          var timer = setInterval((win, qryUrl)=>{            
+      if (DueToMoreThan20Files)
+          qryUrl += "&DueToMoreThan20Files";
+      chrome.tabs.create({ url: qryUrl, active: false}, function(tab) {
+        win = chrome.windows.create({ tabId: tab.id, type: 'popup', focused: true, top: 100, left: 100, height: 645, width: 720}, (win)=>{
+          var timer = setInterval((win)=>{            
             chrome.tabs.query({windowId: win.id, url: qryUrl}, tabs=>{
               if (tabs.length == 0)
               {
@@ -86,7 +88,7 @@ function ShowPreviewPagesSelector()
                 return true;
               }  
             })
-          }, 500, win, qryUrl);
+          }, 500, win);
         });
       });
     });
@@ -97,7 +99,7 @@ chrome.contextMenus.onClicked.addListener(async function(info, tab){
   if (info.menuItemId == "PRReviewHelperCloseOpenedTabs") 
     CloseTabs();
   if (info.menuItemId == "PRReviewHelperShowPageSelector")
-      ShowPreviewPagesSelector();
+      ShowPreviewPagesSelector(false);
 });
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse)=>{
@@ -128,7 +130,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse)=>{
   {
     async function ShowPreviewPagesSelectorAsync()
     {
-      await ShowPreviewPagesSelector().then(res => {sendResponse("finishedbitch")});
+      await ShowPreviewPagesSelector(true).then(res => {sendResponse()});
     }
     ShowPreviewPagesSelectorAsync();
     return true;
