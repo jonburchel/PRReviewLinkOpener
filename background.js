@@ -8,17 +8,15 @@ chrome.action.onClicked.addListener((tab) => {
 
 chrome.runtime.onInstalled.addListener(()=>{
   chrome.contextMenus.create({
-    title:"Close all opened preview tabs. (Alt+K)",
+    title:"Close all opened preview tabs. (Alt+C)",
     contexts:["all"],
-    id: "PRReviewLinkOpenerCloseOpenedTabs",
+    id: "PRReviewHelperCloseOpenedTabs",
   });
 
   chrome.contextMenus.create({
-    type:"checkbox",
-    checked:true,
-    title:"Open the first 20 articles in PR automatically",
+    title:"Choose specific files from this PR to preview. (Alt+S)",
     contexts:["all"],
-    id:"PRReviewLinkOpenerOpenForFirst20DocsInPR"
+    id:"PRReviewHelperShowPageSelector"
   });
 
   chrome.contextMenus.create({
@@ -96,15 +94,10 @@ function ShowPreviewPagesSelector()
 }
 
 chrome.contextMenus.onClicked.addListener(async function(info, tab){
-  if (info.menuItemId == "PRReviewLinkOpenerCloseOpenedTabs") 
+  if (info.menuItemId == "PRReviewHelperCloseOpenedTabs") 
     CloseTabs();
-  if (info.menuItemId == "PRReviewLinkOpenerOpenForFirst20DocsInPR")
-  {
-    if (!info.checked)
-    {
+  if (info.menuItemId == "PRReviewHelperShowPageSelector")
       ShowPreviewPagesSelector();
-    }
-  }
 });
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse)=>{
