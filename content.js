@@ -152,7 +152,6 @@ else
             if (Topics.length > 20 && NoStoredPRFileSelection)
             {
                 chrome.runtime.sendMessage({MsgType: "MoreThan20PreviewFilesEncountered"}, async response => {
-                    console.log(ValidatedFilesTable);
                     var Topics = await BuildTopicsList(ValidatedFilesTable, false);
                     ShowPreviewPages(Topics);
                 });                

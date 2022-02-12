@@ -53,7 +53,6 @@ if (DueToMoreThan20Files)
     document.title = "More than 20 files will be affected by this PR review";
 }
 
-
 ///////////////////////////////////////////////////////////////
 // BEGIN HTML PARSING OF BUILD STATUS IN PR AND BUILD REPORT //
 ///////////////////////////////////////////////////////////////
