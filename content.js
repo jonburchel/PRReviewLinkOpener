@@ -12,32 +12,93 @@ async function readLocalStorageInContent (key) {
 
 function ShowPreviewPages(Topics)
 {
-    if (confirm("Open " + (Topics.filter(t=>t.URL != null).length) + " preview page" + (Topics.length > 1 ? "s" : "") + " for this PR?"))
-    {
-        var TopicsList = "";
-        var OpenedPreviewPages = null;
+    var TopicsList = "";
+    var OpenedPreviewPages = null;
 
-        chrome.storage.local.get("OpenedPreviewPages",  function (ca){
-            if (ca.OpenedPreviewPages != null)
-                OpenedPreviewPages = ca.OpenedPreviewPages;
-            else
-                OpenedPreviewPages = new Array();
-            
-                for (var i = 0; i < Topics.length; i++)
+    chrome.storage.local.get("OpenedPreviewPages",  function (ca){
+        if (ca.OpenedPreviewPages != null)
+            OpenedPreviewPages = ca.OpenedPreviewPages;
+        else
+            OpenedPreviewPages = new Array();
+        
+            for (var i = 0; i < Topics.length; i++)
+            {
+                if (Topics[i].URL != null)
                 {
-                    if (Topics[i].URL != null)
-                    {
-                        OpenedPreviewPages.push(Topics[i].URL);
-                        window.open(Topics[i].URL);
-                    }
-                    TopicsList += Topics[i].Title + "<br>";
+                    OpenedPreviewPages.push(Topics[i].URL);
+                    window.open(Topics[i].URL);
                 }
+                TopicsList += Topics[i].Title + "<br>";
+            }
+            if (Topics.length > 0)
+            {
                 var PR = document.location.href.substring(document.location.href.lastIndexOf("/") + 1);
                 var TopicsListWin = window.open("", "Topics list for PR " + PR);
                 chrome.storage.local.set({"OpenedPreviewPages": OpenedPreviewPages});
                 TopicsListWin.document.body.innerHTML = "<html><head><title>List of topics in PR " + PR + "</title></head><body><H1>List of topics in PR <a href='" + document.location.href + "'>" + PR + "</a></H1>" + TopicsList + "</body></html>";                
-        });               
+            }
+    });               
+}
+
+async function BuildTopicsList(ValidatedFilesTable, IncludeAllIfNoStoredValues)
+{
+    var Topics = new Array();     
+    var PRNum = document.location.href.substring(document.location.href.indexOf("/pull/") + "/pull/".length);
+    var AllChecked = await readLocalStorageInContent("AllFiles" + PRNum);
+    if (AllChecked == null) 
+    {
+        AllChecked = true;
+        if (!IncludeAllIfNoStoredValues)
+            return Topics;
     }
+    for (var i = 1; i < ValidatedFilesTable.rows.length; i++)
+    {
+        try
+        {
+            var href = ValidatedFilesTable.rows[i].children[2].children[0].href;
+            var file = ValidatedFilesTable.rows[i].children[0].children[0].href;
+            
+            var fileend = file;
+            if (fileend.indexOf("/articles/") != -1)
+                fileend = fileend.substring(fileend.indexOf("/articles/"));
+            if (fileend.indexOf("/includes/") != -1)
+                fileend = fileend.substring(fileend.indexOf("/includes/"));
+            var FileChecked = await readLocalStorageInContent("PR" + PRNum + "File" + fileend);
+            if (FileChecked == null) 
+                FileChecked = true;
+
+            if (FileChecked || AllChecked)
+            {
+                if (file.substring(file.length - 3) == ".md")
+                {
+                    function SendMessageWithPromise(){
+                        return new Promise((resolve, reject) => {
+                            chrome.runtime.sendMessage({MsgType: "ValidatedFile", URL: href}, function(res) {
+                                Topics.push({URL: href, Title: res.pageTitle});
+                                resolve();
+                                return true;
+                            });
+                        });
+                    }
+                    await SendMessageWithPromise();
+                }
+                if (file.substring(file.length - 4) == ".png")
+                {
+                    var pngname = ValidatedFilesTable.rows[i].children[0].children[0].innerText;
+                    Topics.push({URL: file, Title: file});
+                }
+                if (file.substring(file.length - 4) == ".yml")
+                {
+                    Topics.push({URL: null, Title: file})
+                }
+            }
+        }
+        catch(e)
+        {
+            // we might get an innocuous exception here if there is no preview URL present so we just skip that item if so
+        }    
+    }
+    return Topics;
 }
 
 if (!document.location.href.startsWith("https://github.com/MicrosoftDocs/") 
@@ -80,63 +141,9 @@ else
                  }
             }
             
-            var Topics = new Array();
-            
             var PRNum = document.location.href.substring(document.location.href.indexOf("/pull/") + "/pull/".length);
-            var AllChecked = await readLocalStorageInContent("AllFiles" + PRNum);
-            var NoStoredPRFileSelection = false;
-            if (AllChecked == null) 
-            {
-                NoStoredPRFileSelection = true;
-                AllChecked = true;
-            }
-            for (var i = 1; i < ValidatedFilesTable.rows.length; i++)
-            {
-                try
-                {
-                    var href = ValidatedFilesTable.rows[i].children[2].children[0].href;
-                    var file = ValidatedFilesTable.rows[i].children[0].children[0].href;
-                    
-                    var fileend = file;
-                    if (fileend.indexOf("/articles/") != -1)
-                        fileend = fileend.substring(fileend.indexOf("/articles/"));
-                    if (fileend.indexOf("/includes/") != -1)
-                        fileend = fileend.substring(fileend.indexOf("/includes/"));
-                    var FileChecked = await readLocalStorageInContent("PR" + PRNum + "File" + fileend);
-                    if (FileChecked == null) 
-                        FileChecked = true;
-
-                    if (FileChecked || AllChecked)
-                    {
-                        if (file.substring(file.length - 3) == ".md")
-                        {
-                            function SendMessageWithPromise(){
-                                return new Promise((resolve, reject) => {
-                                    chrome.runtime.sendMessage({MsgType: "ValidatedFile", URL: href}, function(res) {
-                                        Topics.push({URL: href, Title: res.pageTitle});
-                                        resolve();
-                                        return true;
-                                    });
-                                });
-                            }
-                            await SendMessageWithPromise();
-                        }
-                        if (file.substring(file.length - 4) == ".png")
-                        {
-                            var pngname = ValidatedFilesTable.rows[i].children[0].children[0].innerText;
-                            Topics.push({URL: file, Title: file});
-                        }
-                        if (file.substring(file.length - 4) == ".yml")
-                        {
-                            Topics.push({URL: null, Title: file})
-                        }
-                    }
-                }
-                catch(e)
-                {
-                    // we might get an innocuous exception here if there is no preview URL present so we just skip that item if so
-                }    
-            }
+            var NoStoredPRFileSelection = await readLocalStorageInContent("AllFiles" + PRNum) == null;
+            var Topics = await BuildTopicsList(ValidatedFilesTable, true);
             
             /////////////////////////////////////////////////////////////
             // END HTML PARSING OF BUILD STATUS IN PR AND BUILD REPORT //
@@ -144,14 +151,18 @@ else
 
             if (Topics.length > 20 && NoStoredPRFileSelection)
             {
-                chrome.runtime.sendMessage({MsgType: "MoreThan20PreviewFilesEncountered"}, response => {
-                    console.log(response);
+                chrome.runtime.sendMessage({MsgType: "MoreThan20PreviewFilesEncountered"}, async response => {
+                    console.log(ValidatedFilesTable);
+                    var Topics = await BuildTopicsList(ValidatedFilesTable, false);
                     ShowPreviewPages(Topics);
                 });                
             }
             else
             {
-                ShowPreviewPages(Topics);
+                if (confirm("Open " + (Topics.filter(t=>t.URL != null).length) + " preview page" + (Topics.length > 1 ? "s" : "") + " for this PR?"))
+                {
+                    ShowPreviewPages(Topics);
+                }
             }
             return true;
         });
