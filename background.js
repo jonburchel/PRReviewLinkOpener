@@ -78,18 +78,24 @@ function ShowPreviewPagesSelector(DueToMoreThan20Files)
       if (DueToMoreThan20Files)
           qryUrl += "&DueToMoreThan20Files";
       chrome.tabs.create({ url: qryUrl, active: false}, function(tab) {
-        win = chrome.windows.create({ tabId: tab.id, type: 'popup', focused: true, top: 100, left: 100, height: 645, width: 720}, (win)=>{
-          var timer = setInterval((win)=>{            
-            chrome.tabs.query({windowId: win.id, url: qryUrl}, tabs=>{
-              if (tabs.length == 0)
-              {
-                clearInterval(timer);
-                resolve();
-                return true;
-              }  
-            })
-          }, 500, win);
-        });
+        console.log(tabs[0].windowId);
+        chrome.windows.get(tabs[0].windowId, {populate:false}, (PRwin)=>{
+          var top = PRwin.top + 100;
+          var left = PRwin.left + 100;
+          console.log (top, left);
+          win = chrome.windows.create({ tabId: tab.id, type: 'popup', focused: true, top: top, left: left, height: 645, width: 720}, (win)=>{
+            var timer = setInterval((win)=>{            
+              chrome.tabs.query({windowId: win.id, url: qryUrl}, tabs=>{
+                if (tabs.length == 0)
+                {
+                  clearInterval(timer);
+                  resolve();
+                  return true;
+                }  
+              })
+            }, 500, win);
+          });  
+        })
       });
     });
   });

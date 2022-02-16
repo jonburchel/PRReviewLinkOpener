@@ -112,8 +112,6 @@ else
     // BEGIN HTML PARSING OF BUILD STATUS IN PR AND BUILD REPORT //
     ///////////////////////////////////////////////////////////////
 
-    document.body.style.cursor = "progress";
-
     var h3s = Array.from(document.querySelectorAll('h3'));
     var i = 0;
     for (i = h3s.length - 1; i > 0; i--)
@@ -123,6 +121,15 @@ else
     }
     if (i > 0)
     {
+        document.body.style.cursor = "progress";
+        var img = document.createElement("img");
+        img.id = "loadingimg";
+        img.src = chrome.runtime.getURL('images/loading.gif');
+        img.height = 50;
+        img.width = 50;
+        img.style = "position:absolute; top:48%; left: 48%; transform: translate(-50%, -50%);";
+        document.body.appendChild(img);
+
         var curRow = h3s[i].nextElementSibling.nextElementSibling
         while (curRow.innerText.indexOf("build report") == -1)
             curRow = curRow.nextElementSibling;
@@ -150,7 +157,9 @@ else
             /////////////////////////////////////////////////////////////
             // END HTML PARSING OF BUILD STATUS IN PR AND BUILD REPORT //
             /////////////////////////////////////////////////////////////
+
             document.body.style.cursor = "default";
+            document.getElementById("loadingimg").remove();
 
             if (Topics.length > 20 && NoStoredPRFileSelection)
             {
@@ -173,7 +182,7 @@ else
     {
         alert("There are no preview URLs available yet for this PR.");
     }
-    
+
     // Acrolinx
 
     var h2s = Array.from(document.querySelectorAll('h2'));

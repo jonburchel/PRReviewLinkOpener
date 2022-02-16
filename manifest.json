@@ -8,6 +8,10 @@
       },
     "permissions": ["storage", "activeTab", "scripting", "contextMenus", "tabs", "scripting"],
     "host_permissions": ["http://*/*", "https://*/*", "<all_urls>"],
+    "web_accessible_resources": [{
+      "resources": ["/images/loading.gif"],
+      "matches": ["http://*/*", "https://*/*"]
+    }],
     "action": {
       "default_icon": {
         "16": "/images/PRReviewLinkOpenerIcon16.png",
