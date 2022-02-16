@@ -36,10 +36,10 @@
       },
       "ChooseSpecificFiles": {
         "suggested_key": {
-          "default": "Shift+Alt+S",
-          "mac": "Shift+Alt+S"
+          "default": "Alt+W",
+          "mac": "Alt+W"
         },
-        "description": "Choose specific files to preview (Shift+Alt+S)"
+        "description": "Choose specific files to preview"
       }
     }
   }

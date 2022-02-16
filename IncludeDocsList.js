@@ -135,7 +135,7 @@ chrome.runtime.sendMessage({MsgType: "LoadPRPage", PRPageURL: PRURL}, async resp
                 var i = 1;
                 while (document.getElementById("chkIncludeFile" + i) != null)
                 {
-                    var filename = document.getElementById("chkIncludeFile" + i).nextElementSibling.innerText;
+                    var filename = document.getElementById("chkIncludeFile" + i).parentElement.nextElementSibling.innerText;
                     chrome.storage.local.set({["PR" + PRNum + "File" + filename] : document.getElementById("chkIncludeFile" + i).checked})
                     i++;
                 }

@@ -8,13 +8,13 @@ chrome.action.onClicked.addListener((tab) => {
 
 chrome.runtime.onInstalled.addListener(()=>{
   chrome.contextMenus.create({
-    title:"Close all opened preview tabs. (Alt+C)",
+    title:"Close all opened preview tabs (Alt+K)",
     contexts:["all"],
     id: "PRReviewHelperCloseOpenedTabs",
   });
 
   chrome.contextMenus.create({
-    title:"Choose specific files from this PR to preview. (Alt+S)",
+    title:"Choose specific files from this PR to preview",
     contexts:["all"],
     id:"PRReviewHelperShowPageSelector"
   });
@@ -38,7 +38,7 @@ chrome.runtime.onInstalled.addListener(()=>{
   chrome.contextMenus.create({
     type:"checkbox",
     checked:true,
-    title:"Open article Preview pages from the PR",
+    title:"Open article preview pages from the PR",
     contexts:["all"],
     id:"PRReviewLinkOpenerOpenPreviewPages"
   });
@@ -78,11 +78,9 @@ function ShowPreviewPagesSelector(DueToMoreThan20Files)
       if (DueToMoreThan20Files)
           qryUrl += "&DueToMoreThan20Files";
       chrome.tabs.create({ url: qryUrl, active: false}, function(tab) {
-        console.log(tabs[0].windowId);
         chrome.windows.get(tabs[0].windowId, {populate:false}, (PRwin)=>{
           var top = PRwin.top + 100;
           var left = PRwin.left + 100;
-          console.log (top, left);
           win = chrome.windows.create({ tabId: tab.id, type: 'popup', focused: true, top: top, left: left, height: 645, width: 720}, (win)=>{
             var timer = setInterval((win)=>{            
               chrome.tabs.query({windowId: win.id, url: qryUrl}, tabs=>{
@@ -101,11 +99,21 @@ function ShowPreviewPagesSelector(DueToMoreThan20Files)
   });
 }
 
+chrome.storage.local.set({"OpenPreviewPages": true});
+chrome.storage.local.set({"OpenAcrolinxPages": true});
+chrome.storage.local.set({"OpenChanges": true});
+
 chrome.contextMenus.onClicked.addListener(async function(info, tab){
   if (info.menuItemId == "PRReviewHelperCloseOpenedTabs") 
-    CloseTabs();
+      CloseTabs();
   if (info.menuItemId == "PRReviewHelperShowPageSelector")
       ShowPreviewPagesSelector(false);
+  if (info.menuItemId == "PRReviewLinkOpenerOpenPreviewPages")
+      chrome.storage.local.set({"OpenPreviewPages": info.checked});
+  if (info.menuItemId == "PRReviewLinkOpenerOpenChanges")
+      chrome.storage.local.set({"OpenChanges": info.checked});
+  if (info.menuItemId == "PRReviewLinkOpenerOpenAcrolinx")  
+      chrome.storage.local.set({"OpenAcrolinxPages": info.checked});
 });
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse)=>{
