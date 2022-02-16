@@ -25,17 +25,17 @@
     "commands": {
       "CloseOpenedTabs": {
         "suggested_key": {
-          "default": "Alt+C",
-          "mac": "Alt+C"
+          "default": "Alt+K",
+          "mac": "Alt+K"
         },
-        "description": "Close all opened preview tabs. (Alt+C)"
+        "description": "Close all opened preview tabs (Alt+K)"
       },
       "ChooseSpecificFiles": {
         "suggested_key": {
-          "default": "Alt+S",
-          "mac": "Alt+S"
+          "default": "Shift+Alt+S",
+          "mac": "Shift+Alt+S"
         },
-        "description": "Choose specific files to preview. (Alt+S)"
+        "description": "Choose specific files to preview (Shift+Alt+S)"
       }
     }
   }

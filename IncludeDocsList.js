@@ -94,11 +94,19 @@ chrome.runtime.sendMessage({MsgType: "LoadPRPage", PRPageURL: PRURL}, async resp
             var AllChecked = await readLocalStorage("AllFiles" + PRNum);
             if (AllChecked == null) 
                 AllChecked = true;
+
+            var NewBody = "";
             if (DueToMoreThan20Files)
-            document.body.innerHTML += "<b>There are more than 20 files in this PR.  Choose files for PR review and click OK below to continue:</b><br/><br/><input type=checkbox id=chkIncludeAll " + (AllChecked ? "checked" : "") + " /> Include all files<br/>"
+                NewBody += "<b>There are more than 20 files in this PR.  Choose files for PR review and click OK below to continue:</b><br/>"
             else
-                document.body.innerHTML += "<b>Choose files for review from among those affected by this PR and click OK below:</b><br/><br/><input type=checkbox id=chkIncludeAll " + (AllChecked ? "checked" : "") + " /> Include all files<br/>"
+                NewBody += "<b>Choose files for review from among those affected by this PR and click OK below:</b><br/>"
             
+            NewBody += "<br/><input type=button id=btnOK value='&nbsp;&nbsp;&nbsp;OK&nbsp;&nbsp;&nbsp;' /> <input type=button id=btnCancel value=Cancel />"
+
+            NewBody += 
+                "<br/><br/><table>" + 
+                    "<tr><td><input type=checkbox id=chkIncludeAll " + (AllChecked ? "checked" : "") + " /></td><td>Include all files</td></tr>";
+
             var fileNum = 1;
             for (var i = 1; i < ValidatedFilesTable.rows.length; i++)
             {
@@ -114,12 +122,14 @@ chrome.runtime.sendMessage({MsgType: "LoadPRPage", PRPageURL: PRURL}, async resp
                     var FileChecked = await readLocalStorage("PR" + PRNum + "File" + file);
                     if (FileChecked == null)
                         FileChecked = true;
-                    document.body.innerHTML += 
-                    "<input type=checkbox " + (FileChecked ? "checked" : "") + " id=chkIncludeFile" + fileNum + " /> <a href='" + href + "'>" + file + "</a><br/>";              
+                    NewBody += 
+                    "<tr><td><input type=checkbox " + (FileChecked ? "checked" : "") + " id=chkIncludeFile" + fileNum + " /></td><td nowrap><a href='" + href + "'>" + file + "</a></td></tr>";              
                     fileNum++;
                 }
             }
-            document.body.innerHTML += "<br/><input type=button id=btnOK value='&nbsp;&nbsp;&nbsp;OK&nbsp;&nbsp;&nbsp;' /> <input type=button id=btnCancel value=Cancel />"
+            NewBody += "</table>";
+            document.body.innerHTML = NewBody;
+
             document.getElementById("btnOK").addEventListener("click", ()=>{
                 chrome.storage.local.set({["AllFiles" + PRNum]:(document.getElementById("chkIncludeAll").checked ? true : false)});
                 var i = 1;
@@ -134,6 +144,7 @@ chrome.runtime.sendMessage({MsgType: "LoadPRPage", PRPageURL: PRURL}, async resp
             document.getElementById("btnCancel").addEventListener("click", ()=>{
                 window.close();
             });
+
             document.getElementById("chkIncludeAll").addEventListener("change", CheckboxChanged);
             fileNum = 0;
             for(var i = 1; i < ValidatedFilesTable.rows.length; i++)
