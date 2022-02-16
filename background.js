@@ -52,9 +52,12 @@ function CloseTabs()
       for(var i = 0; i < ca.OpenedPreviewPages.length; i++)
       {
         var url = ca.OpenedPreviewPages[i];
-        chrome.tabs.query({url:url}, function(tab){
-          if (tab != null && tab.length > 0)
-            chrome.tabs.remove(tab[0].id);
+        if (url.indexOf("#") > -1)
+          url = url.substring(0, url.indexOf("#"));
+        chrome.tabs.query({url:url}, function(tabs){
+          if (tabs != null)
+            for(var i = 0; i < tabs.length; i++)
+              chrome.tabs.remove(tabs[i].id);
         });          
       }
     }
