@@ -44,9 +44,15 @@ function ShowPreviewPages(Topics, Acrolinx)
                                 }
                                 if (ShowChanges.OpenChanges)
                                 {
-                                    var PreviewUrl = document.location + "/files#diff-" + sha256(Topics[i].DocsUrl);
-                                    OpenedPreviewPages.push(PreviewUrl);
-                                    window.open(PreviewUrl);  
+                                    var filetype = Topics[i].DocsUrl;
+                                    filetype = filetype.substring(filetype.lastIndexOf("."));
+                                    console.log(filetype);
+                                    if (filetype != ".png")
+                                    {
+                                        var PreviewUrl = document.location + "/files#diff-" + sha256(Topics[i].DocsUrl);
+                                        OpenedPreviewPages.push(PreviewUrl);
+                                        window.open(PreviewUrl);  
+                                    }
                                 }
                             }
                             TopicsList += Topics[i].Title + "<br>";
@@ -238,7 +244,7 @@ async function BuildTopicsList(ValidatedFilesTable, IncludeAllIfNoStoredValues)
                 if (file.substring(file.length - 4) == ".png")
                 {
                     var pngname = ValidatedFilesTable.rows[i].children[0].children[0].innerText;
-                    Topics.push({URL: file, Title: file, fileend});
+                    Topics.push({URL: file, Title: file, DocsUrl: fileend});
                 }
                 // if (file.substring(file.length - 4) == ".yml")
                 // {
