@@ -112,6 +112,8 @@ else
     // BEGIN HTML PARSING OF BUILD STATUS IN PR AND BUILD REPORT //
     ///////////////////////////////////////////////////////////////
 
+    document.body.style.cursor = "progress";
+
     var h3s = Array.from(document.querySelectorAll('h3'));
     var i = 0;
     for (i = h3s.length - 1; i > 0; i--)
@@ -148,6 +150,7 @@ else
             /////////////////////////////////////////////////////////////
             // END HTML PARSING OF BUILD STATUS IN PR AND BUILD REPORT //
             /////////////////////////////////////////////////////////////
+            document.body.style.cursor = "default";
 
             if (Topics.length > 20 && NoStoredPRFileSelection)
             {
@@ -170,6 +173,7 @@ else
     {
         alert("There are no preview URLs available yet for this PR.");
     }
+    
     // Acrolinx
 
     var h2s = Array.from(document.querySelectorAll('h2'));
