@@ -110,21 +110,24 @@ chrome.runtime.sendMessage({MsgType: "LoadPRPage", PRPageURL: PRURL}, async resp
             var fileNum = 1;
             for (var i = 1; i < ValidatedFilesTable.rows.length; i++)
             {
-                var file = ValidatedFilesTable.rows[i].children[0].children[0].href;
-                var href = ValidatedFilesTable.rows[i].children[2].children[0].href;
-                if (file.indexOf("/articles/") != -1)
-                    file = file.substring(file.indexOf("/articles/"));
-                if (file.indexOf("/includes/") != -1)
-                    file = file.substring(file.indexOf("/includes/"));
-                var fileend = file.substring(file.lastIndexOf("."));
-                if (fileend == ".md" || fileend == ".png")
+                if (ValidatedFilesTable.rows[i].children[2].children.length > 0)
                 {
-                    var FileChecked = await readLocalStorage("PR" + PRNum + "File" + file);
-                    if (FileChecked == null)
-                        FileChecked = true;
-                    NewBody += 
-                    "<tr><td><input type=checkbox " + (FileChecked ? "checked" : "") + " id=chkIncludeFile" + fileNum + " /></td><td nowrap><a href='" + href + "'>" + file + "</a></td></tr>";              
-                    fileNum++;
+                    var file = ValidatedFilesTable.rows[i].children[0].children[0].href;
+                    var href = ValidatedFilesTable.rows[i].children[2].children[0].href;
+                    if (file.indexOf("/articles/") != -1)
+                        file = file.substring(file.indexOf("/articles/"));
+                    if (file.indexOf("/includes/") != -1)
+                        file = file.substring(file.indexOf("/includes/"));
+                    var fileend = file.substring(file.lastIndexOf("."));
+                    if (fileend == ".md" || fileend == ".png")
+                    {
+                        var FileChecked = await readLocalStorage("PR" + PRNum + "File" + file);
+                        if (FileChecked == null)
+                            FileChecked = true;
+                        NewBody += 
+                        "<tr><td><input type=checkbox " + (FileChecked ? "checked" : "") + " id=chkIncludeFile" + fileNum + " /></td><td nowrap><a href='" + href + "'>" + file + "</a></td></tr>";              
+                        fileNum++;
+                    }
                 }
             }
             NewBody += "</table>";
@@ -149,12 +152,15 @@ chrome.runtime.sendMessage({MsgType: "LoadPRPage", PRPageURL: PRURL}, async resp
             fileNum = 0;
             for(var i = 1; i < ValidatedFilesTable.rows.length; i++)
             {
-                var file = ValidatedFilesTable.rows[i].children[0].children[0].href;
-                var fileend = file.substring(file.lastIndexOf("."));
-                if (fileend == ".md" || fileend == ".png")
+                if (ValidatedFilesTable.rows[i].children[2].children.length > 0)
                 {
-                    fileNum++;
-                    document.getElementById("chkIncludeFile" + fileNum).addEventListener("change", CheckboxChanged);
+                    var file = ValidatedFilesTable.rows[i].children[0].children[0].href;
+                    var fileend = file.substring(file.lastIndexOf("."));
+                    if (fileend == ".md" || fileend == ".png")
+                    {
+                        fileNum++;
+                        document.getElementById("chkIncludeFile" + fileNum).addEventListener("change", CheckboxChanged);
+                    }
                 }
             }
             return true;
