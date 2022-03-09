@@ -102,9 +102,14 @@ function ShowPreviewPagesSelector(DueToMoreThan20Files)
   });
 }
 
-chrome.storage.local.set({"OpenPreviewPages": true});
-chrome.storage.local.set({"OpenAcrolinxPages": true});
-chrome.storage.local.set({"OpenChanges": true});
+chrome.storage.local.get("OpenPreviewPages2", (OpenPreviewPages)=>{
+  if (OpenPreviewPages.OpenPreviewPages == undefined)
+  {
+    chrome.storage.local.set({"OpenPreviewPages": true});
+    chrome.storage.local.set({"OpenAcrolinxPages": true});
+    chrome.storage.local.set({"OpenChanges": true});
+  }
+});
 
 chrome.contextMenus.onClicked.addListener(async function(info, tab){
   if (info.menuItemId == "PRReviewHelperCloseOpenedTabs") 
