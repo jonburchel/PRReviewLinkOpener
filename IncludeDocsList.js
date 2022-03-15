@@ -74,7 +74,7 @@ chrome.runtime.sendMessage({MsgType: "LoadPRPage", PRPageURL: PRURL}, async resp
         var curRow = h3s[i].nextElementSibling.nextElementSibling
         while (curRow.innerText.indexOf("build report") == -1)
             curRow = curRow.nextElementSibling;
-        var BuildReportUrl = curRow.firstElementChild.href;
+            var BuildReportUrl = curRow.getElementsByTagName("a")[0].href;
 
         chrome.runtime.sendMessage({MsgType: "BuildReport", BuildReportUrl: BuildReportUrl}, async response => {
             var buildreport = document.createElement("html");
