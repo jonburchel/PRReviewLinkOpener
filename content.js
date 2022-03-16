@@ -48,6 +48,7 @@ function ShowPreviewPages(Topics, Acrolinx)
                                     filetype = filetype.substring(filetype.lastIndexOf("."));
                                     if (filetype != ".png")
                                     {
+                                        console.log(Topics[i].DocsUrl)
                                         var PreviewUrl = document.location + "/files#diff-" + sha256(Topics[i].DocsUrl);
                                         OpenedPreviewPages.push(PreviewUrl);
                                         window.open(PreviewUrl);  
@@ -221,8 +222,8 @@ async function BuildTopicsList(ValidatedFilesTable, IncludeAllIfNoStoredValues)
                 fileend = fileend.substring(fileend.indexOf("/articles/") + 1);
             if (fileend.indexOf("/includes/") != -1)
                 fileend = fileend.substring(fileend.indexOf("/includes/") + 1);
-            if (fileend.indexOf("/blob/") != -1)
-                fileend = fileend.substring(fileend.indexOf("/blob/") + 1);
+            if (fileend.indexOf("/seller/") != -1)
+                fileend = fileend.substring(fileend.indexOf("/seller/") + 1);
             var FileChecked = await readLocalStorageInContent("PR" + PRNum + "File/" + fileend);
             if (FileChecked == null) 
                 FileChecked = true;
