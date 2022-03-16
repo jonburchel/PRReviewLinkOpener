@@ -141,6 +141,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse)=>{
   }
   if (message.MsgType == "ValidatedFile")
   {
+    //temporary to prevent title loading perf degradation until I can rework it to pull that as each page is actually opened for preview...
+    sendResponse({pageTitle: message.URL});
+    return true;
     fetch(message.URL).then(res => res.text()).then(html => {
       var title = html.substring(html.indexOf("<title>") + "<title>".length);
       title = title.substring(0, title.indexOf("</title>"));
