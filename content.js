@@ -46,7 +46,6 @@ function ShowPreviewPages(Topics, Acrolinx)
                                 {
                                     var filetype = Topics[i].DocsUrl;
                                     filetype = filetype.substring(filetype.lastIndexOf("."));
-                                    console.log(filetype);
                                     if (filetype != ".png")
                                     {
                                         var PreviewUrl = document.location + "/files#diff-" + sha256(Topics[i].DocsUrl);
@@ -222,13 +221,15 @@ async function BuildTopicsList(ValidatedFilesTable, IncludeAllIfNoStoredValues)
                 fileend = fileend.substring(fileend.indexOf("/articles/") + 1);
             if (fileend.indexOf("/includes/") != -1)
                 fileend = fileend.substring(fileend.indexOf("/includes/") + 1);
+            if (fileend.indexOf("/blob/") != -1)
+                fileend = fileend.substring(fileend.indexOf("/blob/") + 1);
             var FileChecked = await readLocalStorageInContent("PR" + PRNum + "File/" + fileend);
             if (FileChecked == null) 
                 FileChecked = true;
 
             if (FileChecked || AllChecked)
             {
-                if (file.substring(file.length - 3) == ".md")
+                if (file.toLowerCase().substring(file.length - 3) == ".md")
                 {
                     function SendMessageWithPromise(){
                         return new Promise((resolve, reject) => {
@@ -241,7 +242,7 @@ async function BuildTopicsList(ValidatedFilesTable, IncludeAllIfNoStoredValues)
                     }
                     await SendMessageWithPromise();
                 }
-                if (file.substring(file.length - 4) == ".png")
+                if (file.toLowerCase().substring(file.length - 4) == ".png")
                 {
                     var pngname = ValidatedFilesTable.rows[i].children[0].children[0].innerText;
                     Topics.push({URL: file, Title: file, DocsUrl: fileend});
@@ -293,7 +294,6 @@ else
         while (curRow.innerText.indexOf("build report") == -1)
         {
             curRow = curRow.nextElementSibling;
-            console.log(curRow);
         }
         var BuildReportUrl = curRow.getElementsByTagName("a")[0].href;
         

@@ -118,7 +118,9 @@ chrome.runtime.sendMessage({MsgType: "LoadPRPage", PRPageURL: PRURL}, async resp
                         file = file.substring(file.indexOf("/articles/"));
                     if (file.indexOf("/includes/") != -1)
                         file = file.substring(file.indexOf("/includes/"));
-                    var fileend = file.substring(file.lastIndexOf("."));
+                    if (file.indexOf("/blob/") != -1)
+                        file = file.substring(file.indexOf("/blob/"));
+                    var fileend = file.toLowerCase().substring(file.lastIndexOf("."));
                     if (fileend == ".md" || fileend == ".png")
                     {
                         var FileChecked = await readLocalStorage("PR" + PRNum + "File" + file);
